@@ -1,0 +1,27 @@
+{
+  "name": "nextjs-project",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "next",
+    "build": "next build",
+    "start": "bext start"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DeveloperJackProject/nextjs-project.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/DeveloperJackProject/nextjs-project/issues"
+  },
+  "homepage": "https://github.com/DeveloperJackProject/nextjs-project#readme",
+  "dependencies": {
+    "next": "^8.0.3",
+    "react": "^16.12.0",
+    "react-dom": "^16.12.0"
+  }
+}
