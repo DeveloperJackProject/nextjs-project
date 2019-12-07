@@ -81,149 +81,150 @@
     使用ioredis进行链接
 
 # next
-    + Link组件，页面跳转: Link组件必须填充节点，而且，必须是唯一节点
 
-        import { Button } from "antd"
-        import Link from 'next/link'
++ Link组件，页面跳转: Link组件必须填充节点，而且，必须是唯一节点
 
-        export default () => (
-            <Link href="/a">
-                <Button>Index</Button>
-            </Link>
+    import { Button } from "antd"
+    import Link from 'next/link'
+
+    export default () => (
+        <Link href="/a">
+            <Button>Index</Button>
+        </Link>
+    )
+
++ Router模块，代码跳转
+
+    import { Button } from "antd"
+    import Link from 'next/link'
+    import Router from 'next/router'
+
+    export default () => {
+
+        function goToB(){
+            Router.push('/b')
+            // 也可以使用对象方式
+
+            Router.push({
+                pathname: '/b'
+            })
+        }
+
+        return (
+            <>
+                <Link href="/a">
+                    <Button>Jump to A</Button>
+                </Link>
+                <Button onClick={goToB}>Jump to B</Button>
+            </>
+
         )
+    }
 
-    + Router模块，代码跳转
++ 动态路由只能通过query
 
-        import { Button } from "antd"
-        import Link from 'next/link'
-        import Router from 'next/router'
+    import { Button } from "antd"
+    import Link from 'next/link'
+    import Router from 'next/router'
 
-        export default () => {
+    export default () => {
 
-            function goToB(){
-                Router.push('/b')
-                // 也可以使用对象方式
-
-                Router.push({
-                    pathname: '/b'
-                })
-            }
-
-            return (
-                <>
-                    <Link href="/a">
-                        <Button>Jump to A</Button>
-                    </Link>
-                    <Button onClick={goToB}>Jump to B</Button>
-                </>
-
-            )
-        }
-
-    + 动态路由只能通过query
-
-        import { Button } from "antd"
-        import Link from 'next/link'
-        import Router from 'next/router'
-
-        export default () => {
-
-            function goToB(){
-                Router.push('/b?a=1')
-                // 也可以使用对象方式
-
-                Router.push({
-                    pathname: '/b'，
-                    query: {
-                        id:2
-                    }
-                })
-            }
-
-            return (
-                <>
-                    <Link href="/a?a=2">
-                        <Button>Jump to A</Button>
-                    </Link>
-                    <Button onClick={goToB}>Jump to B</Button>
-                </>
-
-            )
-        }
-
-        获取传递参数使用withRouter
-
-            import { withRouter } from 'next/router'
-            import Comp from '../components/b'
-
-            const B = ({ router }) => <Comp>{ router.query.id }</Comp>
-
-            export default withRouter(B)
-
-    + 路由映射: 
-
-        link标签的as属性
-
-            <Link href="/a" as="/page/a">
-                <Button>Jump to A</Button>
-            </Link>
-
-        Router.push的第二个参数
+        function goToB(){
+            Router.push('/b?a=1')
+            // 也可以使用对象方式
 
             Router.push({
                 pathname: '/b'，
                 query: {
                     id:2
                 }
-            }, '/page/b')
-
-        以上方法访问之后，刷新页面会出现404，需要在KOA中配置将服务器访问地址转化成前端实际访问地址：
-
-        const router = new Router()
-
-        router.get('/a/:id', async (ctx)=>{
-            const id = ctx.params.id
-            await handle(ctx.req, ctx.res, {
-                pathname: '/a',
-                query: {
-                    id:2
-                }
             })
-            ctx.respond = false
-        })
-
-        server.use(router.routes)
-
-
-    + Router的钩子
-
-        // 所有的路由钩子名称，写在了一个数组中
-
-        const events = [
-            'routeChangeStart',
-            'routeChangeComplete',
-            'routeChnageError',
-            'beforeHistoryChange',
-            'hashChangeStart',
-            'hashChangeComplete'
-        ]
-
-        // 通过一个高阶函数在钩子触发后执行自定义的逻辑，这里直接输出了钩子名称和钩子函数的参数
-
-        function makeEvent(type) {
-            return (...args) => {
-                console.log(type, ...args)
-            }
         }
 
-        //通过forEach遍历 绑定钩子事件
-        
-        events.forEach(event => {
-            Router.events.on(event, makeEvent(event))
-        })
+        return (
+            <>
+                <Link href="/a?a=2">
+                    <Button>Jump to A</Button>
+                </Link>
+                <Button onClick={goToB}>Jump to B</Button>
+            </>
 
-        //当路由发生跳转 => routeChangeStart => beforeHistoryChange => routeChangeComplete
-        //hash改变 => hashChangeStart => hashChangeComplete
+        )
+    }
+
+    获取传递参数使用withRouter
+
+        import { withRouter } from 'next/router'
+        import Comp from '../components/b'
+
+        const B = ({ router }) => <Comp>{ router.query.id }</Comp>
+
+        export default withRouter(B)
+
++ 路由映射: 
+
+    link标签的as属性
+
+        <Link href="/a" as="/page/a">
+            <Button>Jump to A</Button>
+        </Link>
+
+    Router.push的第二个参数
+
+        Router.push({
+            pathname: '/b'，
+            query: {
+                id:2
+            }
+        }, '/page/b')
+
+    以上方法访问之后，刷新页面会出现404，需要在KOA中配置将服务器访问地址转化成前端实际访问地址：
+
+    const router = new Router()
+
+    router.get('/a/:id', async (ctx)=>{
+        const id = ctx.params.id
+        await handle(ctx.req, ctx.res, {
+            pathname: '/a',
+            query: {
+                id:2
+            }
+        })
+        ctx.respond = false
+    })
+
+    server.use(router.routes)
+
+
++ Router的钩子
+
+    // 所有的路由钩子名称，写在了一个数组中
+
+    const events = [
+        'routeChangeStart',
+        'routeChangeComplete',
+        'routeChnageError',
+        'beforeHistoryChange',
+        'hashChangeStart',
+        'hashChangeComplete'
+    ]
+
+    // 通过一个高阶函数在钩子触发后执行自定义的逻辑，这里直接输出了钩子名称和钩子函数的参数
+
+    function makeEvent(type) {
+        return (...args) => {
+            console.log(type, ...args)
+        }
+    }
+
+    //通过forEach遍历 绑定钩子事件
+    
+    events.forEach(event => {
+        Router.events.on(event, makeEvent(event))
+    })
+
+    //当路由发生跳转 => routeChangeStart => beforeHistoryChange => routeChangeComplete
+    //hash改变 => hashChangeStart => hashChangeComplete
         
 
 # other
