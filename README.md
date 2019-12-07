@@ -59,3 +59,67 @@
         await handle(ctx.req, ctx.res)
         ctx.respond = false
     });
+
+4.redis安装
+
+    windows: https://github.com/MicrosoftArchive/redis/releases
+    Mac: 
+        方法1：下载之后，进入folder执行make进行编译，然后sudo make install
+        方法2：安装Homebrew，先brew update,然后brew install redis
+
+5.redis基础使用
+
+    redis-cli -p port
+    set key value: 存入值
+    get key：获取值
+    setex key timeout value： 可以设置数据过期时间(单位：秒)，这样就可以省去代码中处理过期逻辑。例如session过期
+    KEYs *：获取所有的KEY
+    DEL keyname：删除存储的键值对
+
+6.node链接redis
+
+    使用ioredis进行链接
+
+
+# other
+
+   + 关于next的小坑
+        + next的getRequestHandler只支持node的request和response
+        + next默认不支持css，也就是import语法，会failed to compile，因为有CSS in JS
+            解决方法：yarn add @zeit/next-css
+            ```
+                const withCss = require('@zeit/next-css')
+                //withLess
+
+                if(typeof require !== 'undefined'){
+                    require.extensions['.css'] = file => {}
+                }
+
+                module.exports = withCss({})
+                // module.exports = withLess(withCss({}))
+            ```
+        + next引用antd的组件，如何引用样式
+            方法1：
+                在page下，创建_app.js复写原next/app，然后在其中引用
+                ```
+                    import App from 'next/app'
+                    import 'antd/dist/antd.css'
+                    export default App;
+                ```
+            
+            方法2：
+                在babelrc中配置，添加style那一行，但是在webpack会有问题，[mini-css-extract-plugin]会报错
+                ```
+                    {
+                        "presets": ["next/babel"],
+                        "plugins": [
+                            [
+                                "import", {
+                                    "libraryName": "antd",
+                                    "style": "css"
+                                }
+                            ]
+                        ]
+                    }
+                ```
+            
