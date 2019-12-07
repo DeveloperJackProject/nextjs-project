@@ -86,6 +86,7 @@
    + 关于next的小坑
         + next的getRequestHandler只支持node的request和response
         + next默认不支持css，也就是import语法，会failed to compile，因为有CSS in JS
+
             解决方法：yarn add @zeit/next-css
             ```
                 const withCss = require('@zeit/next-css')
@@ -99,16 +100,17 @@
                 // module.exports = withLess(withCss({}))
             ```
         + next引用antd的组件，如何引用样式
-            方法1：
-                在page下，创建_app.js复写原next/app，然后在其中引用
+
+            方法1：在page下，创建_app.js复写原next/app，然后在其中引用
+
                 ```
                     import App from 'next/app'
                     import 'antd/dist/antd.css'
                     export default App;
                 ```
             
-            方法2：
-                在babelrc中配置，添加style那一行，但是在webpack会有问题，[mini-css-extract-plugin]会报错
+            方法2：在babelrc中配置，添加style那一行，但是在webpack会有问题，[mini-css-extract-plugin]会报错
+
                 ```
                     {
                         "presets": ["next/babel"],
