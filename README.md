@@ -11,34 +11,28 @@
 
 2.如何手动创建react+next的项目：
 
-    ```
-        yarn add react react-dom next
-    ```
+    yarn add react react-dom next
 
 3.如何通过脚手架创建react+next项目：
 
-    ```
-        npm install -g create-next-app
-        npx create-next-app projectname
-        或者
-        yarn create next-app projectname
-    ```
+    npm install -g create-next-app
+    npx create-next-app projectname
+    或者
+    yarn create next-app projectname
 
 # Day 2
 1.koa就是对nodejs的http模块进行了一个简单的封装
 
     koa2中间件模式
-    ```
-        const server = new Koa();
-        server.use(middleware);
-        or
-        server.use(async (ctx, next) => {
-            //ctx 记录请求和请求的内容，返回也是使用ctx，例如希望请求返回一段代码，就是ctx.body = '<span>body</span>'
-            // 返回数据，则是ctx.body = {success: true}，另外需要ctx.set('Content-Type', 'application/json')
-            //next 调用下一个中间件， await next()，不加入这句话，则无法执行下一个中间件
-        });
-        /// KOA1中使用的是Generator
-    ```
+    const server = new Koa();
+    server.use(middleware);
+    or
+    server.use(async (ctx, next) => {
+        //ctx 记录请求和请求的内容，返回也是使用ctx，例如希望请求返回一段代码，就是ctx.body = '<span>body</span>'
+        // 返回数据，则是ctx.body = {success: true}，另外需要ctx.set('Content-Type', 'application/json')
+        //next 调用下一个中间件， await next()，不加入这句话，则无法执行下一个中间件
+    });
+    /// KOA1中使用的是Generator
 
 2.KOA的ctx中的：
 
@@ -49,22 +43,19 @@
     res：nodejs的response对象
 
     koa-router
-    ```
-        const router = new Router()
-        //定义对于某一个路径下的某一个method该是用那一个函数来处理
-        router.get('/test/:id', (ctx) => {
-            //ctx.params.id就能获取传递参数
-        })
-        //调用设置的router
-        server.use(router.routes())
-    ```
+
+    const router = new Router()
+    //定义对于某一个路径下的某一个method该是用那一个函数来处理
+    router.get('/test/:id', (ctx) => {
+        //ctx.params.id就能获取传递参数
+    })
+    //调用设置的router
+    server.use(router.routes())
 
 3.结合next使用
 
-    ```
-        server.use(async (ctx, next) => {
-            //使用req和res的原因是，next为了兼容各个node server，这样就能保证统一的输入处理
-            await handle(ctx.req, ctx.res)
-            ctx.respond = false
-        });
-    ```
+    server.use(async (ctx, next) => {
+        //使用req和res的原因是，next为了兼容各个node server，这样就能保证统一的输入处理
+        await handle(ctx.req, ctx.res)
+        ctx.respond = false
+    });
