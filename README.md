@@ -102,7 +102,6 @@
         + next引用antd的组件，如何引用样式
 
             方法1：在page下，创建_app.js复写原next/app，然后在其中引用
-
                 ```
                     import App from 'next/app'
                     import 'antd/dist/antd.css'
@@ -110,7 +109,6 @@
                 ```
             
             方法2：在babelrc中配置，添加style那一行，但是在webpack会有问题，[mini-css-extract-plugin]会报错
-
                 ```
                     {
                         "presets": ["next/babel"],
