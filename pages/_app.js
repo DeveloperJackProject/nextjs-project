@@ -7,10 +7,10 @@ class MyApp extends App {
 
     // getInitialProps的时候，Component对应的就是每个页面
     // 每一次页面切换都会被执行
-    static async getInitialProps ({ Component }){
+    static async getInitialProps ({ Component, ctx }){
         let pageProps;
         if(Component.getInitialProps) {
-            pageProps = await Component.getInitialProps()
+            pageProps = await Component.getInitialProps(ctx)
         }
         return {
             pageProps
@@ -25,7 +25,7 @@ class MyApp extends App {
         return (
             <Container>
                 <div>
-                    <Link href="/">Back to Index</Link>
+                    <Link href="/"><a>Back to Index</a></Link>
                 </div>
                 <Component {...pageProps}/>
             </Container>

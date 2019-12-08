@@ -122,10 +122,10 @@
 
         // getInitialProps的时候，Component对应的就是每个页面
         // 每一次页面切换都会被执行
-        static async getInitialProps ({ Component }){
+        static async getInitialProps ({ Component, ctx }){
             let pageProps;
             if(Component.getInitialProps) {
-                pageProps = await Component.getInitialProps()
+                pageProps = await Component.getInitialProps(ctx)
             }
             return {
                 pageProps
@@ -149,6 +149,40 @@
     }
 
     export default MyApp;
+
+3.自定义document
+
+    只有在服务端渲染的时候才会调用，是用来修改服务端渲染的文档内容，一般用来配合第三方css-in-js方案使用
+    基础重写模板
+
+    import Document, { Html, Head, Main, NextScript } from 'next/document'
+
+    class MyDocument extends Document {
+
+        static async getInitialProps(ctx){
+            const props = await Document.getInitialProps(ctx)
+            return {
+                ...props
+            };
+        }
+
+        render() {
+            return <Html>
+                <Head>
+
+                </Head>
+                <body>
+                    <Main />
+                    <NextScript />
+                </body>
+            </Html>
+        }
+    }
+
+    export default MyDocument
+
+4.定义样式，使用css-in-js方案
+
 
 
 
