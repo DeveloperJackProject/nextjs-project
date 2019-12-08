@@ -183,7 +183,40 @@
 
 4.定义样式，使用css-in-js方案
 
+    标签生效范围是在组件挂载的时候，组件卸载后，样式就会失效，包括在写global的时候
+    可以防止组件之间的样式冲突，同时能够孤立作用域
+    更多知识： https://github.com/zeit/styled-jsx
 
+    import Link from 'next/link'
+    import { withRouter } from 'next/router'
+    import Comp from '../components/a'
+
+    const D = ({ router, name }) => (
+        <>
+            <Link href="#aaa">
+                <a className="link">test</a>
+            </Link>
+            <style jsx>
+                {`
+                    a {
+                        color: blue
+                    }
+                    .link {
+                        color: yellowgreen
+                    }
+                `}
+            </style>
+            <style jsx global>
+                {`
+                    a {
+                        color: red
+                    }
+                `}
+            </style>
+        </>
+    )
+
+    export default withRouter(D)
 
 
 # next

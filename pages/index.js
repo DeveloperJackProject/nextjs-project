@@ -43,6 +43,10 @@ export default () => {
         })
     }
 
+    function goToD(){
+        Router.push('/d')
+    }
+
     return (
         <>
             <Link href="/a" as="/page/a">
@@ -50,6 +54,7 @@ export default () => {
             </Link>
             <Button onClick={goToB}>Jump to B</Button>
             <Button onClick={goToC}>Jump to C</Button>
+            <Button onClick={goToD}>Jump to D</Button>
         </>
 
     )
