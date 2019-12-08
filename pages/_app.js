@@ -8,6 +8,7 @@ class MyApp extends App {
     // getInitialProps的时候，Component对应的就是每个页面
     // 每一次页面切换都会被执行
     static async getInitialProps ({ Component, ctx }){
+        console.log("app");
         let pageProps;
         if(Component.getInitialProps) {
             pageProps = await Component.getInitialProps(ctx)

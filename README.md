@@ -758,7 +758,14 @@
                 }
             ```
 
-        + 特殊字体fira code： https://github.com/tonsky/FiraCode
+    + 特殊字体fira code： https://github.com/tonsky/FiraCode
 
-        + moment: 是一个 JavaScript 日期处理类库,用于解析、检验、操作、以及显示日期 http://momentjs.cn/docs/
+    + moment: 是一个 JavaScript 日期处理类库,用于解析、检验、操作、以及显示日期 http://momentjs.cn/docs/
+
+    + Next SSR流程：
+      + 客户端发起： 浏览器发出请求/page请求 => KOA收到请求，调用next => next开始渲染 => 
+                   调用getInitialProps（先调用_app中的，然后是page中的,最后是document） =>
+                   然后渲染出html => 返回浏览器渲染
+      + 客户端路由跳转： 点击跳转按钮 => 异步加载页面组件的js => 调用页面的getInitialProps（先调用_app中的，然后是page中的） =>
+                      数据返回，路由变化 => 渲染出新的页面
             
