@@ -1,6 +1,9 @@
 import { Button } from "antd"
 import Link from 'next/link'
 import Router from 'next/router'
+import getConfig from 'next/config'
+
+const { serverRuntimeConfig, publicRuntimeConfig } = getConfig()
 
 // 所有的路由钩子名称，写在了一个数组中
 
@@ -46,11 +49,14 @@ export default () => {
     function goToD(){
         Router.push('/d')
     }
+    
+    console.log(publicRuntimeConfig)
+    console.log(serverRuntimeConfig)
 
     return (
         <>
             <Link href="/a" as="/page/a">
-                <Button>Jump to A</Button>
+            <Button>Jump to A {process.env.customKey}</Button>
             </Link>
             <Button onClick={goToB}>Jump to B</Button>
             <Button onClick={goToC}>Jump to C</Button>

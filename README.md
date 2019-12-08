@@ -181,7 +181,7 @@
 
     export default MyDocument
 
-4.定义样式，使用css-in-js方案
+4.定义样式，使用css-in-js方案(默认)
 
     标签生效范围是在组件挂载的时候，组件卸载后，样式就会失效，包括在写global的时候
     可以防止组件之间的样式冲突，同时能够孤立作用域
@@ -217,6 +217,138 @@
     )
 
     export default withRouter(D)
+
+5.对组件进行类似拦截处理，即重写renderPage
+
+    在renderpage中有enhanceApp和enhanceComponent，可以对这两个对象做自定义处理来达到自身想要的效果
+
+    import Document, { Html, Head, Main, NextScript } from 'next/document'
+
+    //HOC
+    function withLog(Comp){
+        return props=>{
+            console.log(props)
+            return <Comp {...props} />
+        }
+    }
+
+
+    class MyDocument extends Document {
+
+        static async getInitialProps(ctx){
+            const originalRenderPage = ctx.renderPage
+
+            ctx.renderPage = () => originalRenderPage({
+                enhanceApp: App=>withLog(App),
+                enhanceComponent: Component=>withLog(Component)
+            })
+            
+            const props = await Document.getInitialProps(ctx)
+            return {
+                ...props
+            };
+        }
+
+        render() {
+            return <Html>
+                <Head>
+
+                </Head>
+                <body>
+                    <Main />
+                    <NextScript />
+                </body>
+            </Html>
+        }
+    }
+
+    export default MyDocument
+
+6.定义样式，styled-component
+
+    yarn add styled-components babel-plugin-styled-components
+
+    .babelrc
+    {
+        "presets": ["next/babel"],
+        "plugins": [
+            [
+                "import", {
+                    "libraryName": "antd"
+                }
+            ],
+            [
+                "styled-components",
+                {
+                    "ssr":true
+                }
+            ]
+        ]
+    }
+
+    _document.js：引入styled-component，然后使用ServerStyleSheet.collectStyles来获取页面生成的样式，然后通过getStyleElement将样式挂载到App上
+
+    import Document, { Html, Head, Main, NextScript } from 'next/document'
+    import { ServerStyleSheet } from 'styled-components'
+
+    //HOC
+
+    class MyDocument extends Document {
+
+        static async getInitialProps(ctx) {
+            const sheet = new ServerStyleSheet()
+            const originalRenderPage = ctx.renderPage
+
+            try {
+                ctx.renderPage = () => originalRenderPage({
+                    enhanceApp: App => (props) => sheet.collectStyles(<App {...props}/>)
+                })
+
+                const props = await Document.getInitialProps(ctx)
+                return {
+                    ...props,
+                    styles:<>{props.styles}{sheet.getStyleElement()}</>
+                };
+            } finally {
+                sheet.seal()
+            }
+        }
+
+        render() {
+            return <Html>
+                <Head>
+
+                </Head>
+                <body>
+                    <Main />
+                    <NextScript />
+                </body>
+            </Html>
+        }
+    }
+
+    export default MyDocument
+
+    pagea.js: 定义styled组件，写入样式
+
+    import Link from 'next/link'
+    import { Button } from 'antd'
+    import styled from 'styled-components'
+
+    const Title = styled.h1`
+        color: yellow;
+        font-size: 40px;
+    `;
+
+    export default () => (
+        <>
+            <Title>Title</Title>
+            <Link href="/b#1234">
+                <Button>B</Button>
+            </Link>
+        </>
+    )
+
 
 
 # next
@@ -398,7 +530,190 @@
         return await promise
     }
 
++ LazyLoading
 
+    异步加载模块, 下面这段代码引用了moment包，如果在pages有一半的页面引用，则会将moment作为公共的依赖提取出来，
+    然后，打包进公用模块，每次加载都会将moment加载进去，这就会让初始化加载的js会特别大
+
+    import Link from 'next/link'
+    import { Button } from 'antd'
+    import styled from 'styled-components'
+    import moment from 'moment'
+    import { withRouter } from 'next/router'
+
+    const Title = styled.h1`
+        color: yellow;
+        font-size: 40px;
+    `;
+
+    const B = ({time}) => <></>
+
+    B.getInitialProps = async () => {
+
+        const promise = new Promise((resolve) => {
+            setTimeout(() => {
+                resolve({
+                    name: 'jack',
+                    time:moment(Date.now() - 60 * 1000).fromNow()
+                })
+            }, 1000)
+        })
+        return await promise
+    }
+
+    export default withRouter(B)
+
+    改进方案：在getInitialProps中异步引用moment，然后在使用的地方使用moment.default
+
+    B.getInitialProps = async () => {
+        const moment = await import('moment')
+
+        const promise = new Promise((resolve) => {
+            setTimeout(() => {
+                resolve({
+                    name: 'jack',
+                    time:moment.default(Date.now() - 60 * 1000).fromNow()
+                })
+            }, 1000)
+        })
+        return await promise
+    }
+
+
+    异步加载组件： 使用import dynamic from 'next/dynamic' 然后 const Comp = dynamic(import('../components/b'))
+
+    import { withRouter } from 'next/router'
+    import Comp from '../components/b'
+
+    const B = ({ router, name }) => <Comp>{ router.query.id } { name }</Comp>
+
+    B.getInitialProps = async () => {
+        const promise = new Promise((resolve) => {
+            setTimeout(() => {
+                resolve({
+                    name: 'jack'
+                })
+            }, 1000)
+        })
+        return await promise
+    }
+
+    export default withRouter(B)
+
+    改成异步之后：使用dynamic之后等待要渲染Comp这个组件的时候才会加载Comp组件，这是不会将Comp打包进主组件
+
+    import { withRouter } from 'next/router'
+    import dynamic from 'next/dynamic'
+
+    const Comp = dynamic(import('../components/b'))
+
+    const B = ({ router, name }) => <Comp>{ router.query.id } { name }</Comp>
+
+    B.getInitialProps = async () => {
+        const promise = new Promise((resolve) => {
+            setTimeout(() => {
+                resolve({
+                    name: 'jack'
+                })
+            }, 1000)
+        })
+        return await promise
+    }
+
+    export default withRouter(B)
+
+
++ next的配置项：next.config.js
+
+    const withCss = require('@zeit/next-css')
+    const config = require('./config')
+
+    const configs = {
+        // 编译文件的输出目录
+        distDir: 'dest',
+        // 是否给每个路由生成Etag，如果使用Nginx的Etag，则可以把这个关掉来提高性能
+        generateEtags: true,
+        // 页面内容缓存配置（本地开发时有效）
+        onDemandEntries: {
+            // 内容在内存中缓存的时长（ms）
+            maxInactiveAge: 25 * 1000,
+            // 同时缓存多少个页面
+            pagesBufferLength: 2,
+        },
+        // 在pages目录下那种后缀的文件会被认为是页面
+        pageExtensions: ['jsx', 'js'],
+        // 配置buildId
+        generateBuildId: async () => {
+            if (process.env.YOUR_BUILD_ID) {
+            return process.env.YOUR_BUILD_ID
+            }
+
+            // 返回null使用默认的unique id
+            return null
+        },
+        // 手动修改webpack config
+        webpack(config, options) {
+            return config
+        },
+        // 修改webpackDevMiddleware配置
+        webpackDevMiddleware: config => {
+            return config
+        },
+        // 可以在页面上通过 procsess.env.customKey 获取 value
+        env: {
+            customKey: 'value',
+        },
+        // 下面两个要通过 'next/config' 来读取
+        // 只有在服务端渲染时才会获取的配置
+        serverRuntimeConfig: {
+            mySecret: 'secret',
+            secondSecret: process.env.SECOND_SECRET,
+        },
+        // 在服务端渲染和客户端渲染都可获取的配置
+        publicRuntimeConfig: {
+            staticFolder: '/static',
+        },
+    }
+
+    if (typeof require !== 'undefined') {
+        require.extensions['.css'] = file => {}
+    }
+
+    const GITHUB_OAUTH_URL = 'https://github.com/login/oauth/authorize'
+    const SCOPE = 'user'
+
+    module.exports = withCss({
+        publicRuntimeConfig: {
+            GITHUB_OAUTH_URL,
+            OAUTH_URL: `${GITHUB_OAUTH_URL}?client_id=${
+            config.github.client_id
+            }&scope=${SCOPE}`,
+        },
+    })
+
++ 获取config的参数
+
+    先配置进去
+    module.exports = withCss({
+        env: {
+            customKey: 'value'
+        },
+        // 下面两个要通过 'next/config' 来读取
+        // 只有在服务端渲染时才会获取的配置
+        serverRuntimeConfig: {
+            mySecret: 'secret',
+            secondSecret: process.env.SECOND_SECRET,
+        },
+        // 在服务端渲染和客户端渲染都可获取的配置
+        publicRuntimeConfig: {
+            staticFolder: '/static',
+        },
+    })
+
+    获取env则使用：process.env.customKey
+    获取config：（serverRuntimeConfig无法在浏览器中看到，为了安全起见，例如密钥）
+        import getConfig from 'next/config'
+        const { serverRuntimeConfig, publicRuntimeConfig } = getConfig()
 
 
 # other
@@ -444,4 +759,6 @@
             ```
 
         + 特殊字体fira code： https://github.com/tonsky/FiraCode
+
+        + moment: 是一个 JavaScript 日期处理类库,用于解析、检验、操作、以及显示日期 http://momentjs.cn/docs/
             

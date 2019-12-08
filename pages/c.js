@@ -1,6 +1,7 @@
 import { withRouter } from 'next/router'
-import Comp from '../components/b'
-import { resolve } from 'any-promise'
+import dynamic from 'next/dynamic'
+
+const Comp = dynamic(import('../components/b'))
 
 const B = ({ router, name }) => <Comp>{ router.query.id } { name }</Comp>
 
