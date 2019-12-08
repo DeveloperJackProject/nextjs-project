@@ -80,6 +80,78 @@
 
     使用ioredis进行链接
 
+
+# Day 3 
+
+1.getInitialProps
+
+2.自定义_app，即用自定义的_app覆盖next默认的app
+
+    用来固定布局
+    例如保持公用状态，如Redux
+    给页面传入自定义的数据（类似全局数据）
+    自定义一些错误处理
+
+    import App, { Container } from 'next/app'
+
+    import 'antd/dist/antd.css'
+
+    class MyApp extends App {
+        render() {
+            // render的时候，Component对应的就是每个页面
+            const { Component } = this.props
+
+            return (
+                <Container>
+                    <Component/>
+                </Container>
+            )
+        }
+    }
+
+    export default MyApp;
+
+    //更多拓展
+
+    import App, { Container } from 'next/app'
+    import Link from 'next/link'
+
+    import 'antd/dist/antd.css'
+
+    class MyApp extends App {
+
+        // getInitialProps的时候，Component对应的就是每个页面
+        // 每一次页面切换都会被执行
+        static async getInitialProps ({ Component }){
+            let pageProps;
+            if(Component.getInitialProps) {
+                pageProps = await Component.getInitialProps()
+            }
+            return {
+                pageProps
+            }
+        }
+
+        render() {
+            // render的时候，Component对应的就是每个页面
+            // 在render中传递各种想要给每个page传递的值
+            const { Component, pageProps } = this.props
+
+            return (
+                <Container>
+                    <div>
+                        <Link href="/">Back to Index</Link>
+                    </div>
+                    <Component {...pageProps}/>
+                </Container>
+            )
+        }
+    }
+
+    export default MyApp;
+
+
+
 # next
 
 + Link组件，页面跳转: Link组件必须填充节点，而且，必须是唯一节点
@@ -226,6 +298,41 @@
     //当路由发生跳转 => routeChangeStart => beforeHistoryChange => routeChangeComplete
     //hash改变 => hashChangeStart => hashChangeComplete
         
++ getInitialProps (请求页面需要的数据)
+
+    在页面中获取数据/在App中获取全局性数据，可以帮我们完成客户端和服务器端的数据同步
+    是nextjs的数据获取规范，只有pages下面组件的getInitialProps才会被调用
+    浏览器直接输入地址，则服务器端请求数据渲染
+    如果通过react的link/router跳转，则在客户端请求服务端数据
+
+    import { withRouter } from 'next/router'
+    import Comp from '../components/b'
+
+    const B = ({ router, name }) => <Comp>{ router.query.id } { name }</Comp>
+
+    // 同步
+    B.getInitialProps = () => {
+        return {
+            name: 'jack'
+        }
+    }
+
+    export default withRouter(B)
+
+    //异步
+    B.getInitialProps = async () => {
+        const promise = new Promise((resolve) => {
+            setTimeout(() => {
+                resolve({
+                    name: 'jack'
+                })
+            }, 1000)
+        })
+        return await promise
+    }
+
+
+
 
 # other
 
